@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Configuration;
 using System.Threading;
 using CacheSimpleExample.Controllers;
 using CacheSimpleExample.Interfaces;
+using CacheSimpleExample.Repository;
+using Castle.MicroKernel.Registration;
+using Castle.Windsor;
 
 namespace CacheSimpleExample
 {
@@ -9,7 +13,13 @@ namespace CacheSimpleExample
     {
         static void Main(string[] args)
         {
-            ICache cache = new Cache();
+            var container = new WindsorContainer();
+            var connectionString = ConfigurationManager.ConnectionStrings["local"].ConnectionString;
+
+            container.Register(Component.For<ICache>().ImplementedBy<Cache>());
+            container.Register(Component.For<IDAL>().ImplementedBy<DAL>().DependsOn(Dependency.OnValue("connectionString", connectionString)));
+
+            var cache = container.Resolve<ICache>();
 
             var date = cache.GetCachedData();
             Console.WriteLine(date);

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.Caching;
 using CacheSimpleExample.Interfaces;
-using CacheSimpleExample.Repository;
 
 namespace CacheSimpleExample.Controllers
 {
@@ -10,32 +9,16 @@ namespace CacheSimpleExample.Controllers
         private readonly IDAL _dal;
         private const int ExpirationTimeInSec = 2;
         private const string CacheKey = "CacheFromDB";
-        private static readonly object CacheLock = new object();
 
-        public Cache()
+        public Cache(IDAL dal)
         {
-            _dal = new DAL();
+            _dal = dal;
         }
 
         public string GetCachedData()
         {
-            var cachedDate = MemoryCache.Default.Get(CacheKey) as string;
-
-            if (cachedDate != null)
+            if (!MemoryCache.Default.Contains(CacheKey))
             {
-                Console.WriteLine("Returned from cache:");
-                return cachedDate;
-            }
-
-            lock (CacheLock)
-            {
-                cachedDate = MemoryCache.Default.Get(CacheKey) as string;
-
-                if (cachedDate != null)
-                {
-                    return cachedDate;
-                }
-
                 var dateFromDb = _dal.GetDateTimeFromSql();
                 var policy = new CacheItemPolicy()
                 {
@@ -45,6 +28,9 @@ namespace CacheSimpleExample.Controllers
                 MemoryCache.Default.Set(CacheKey, dateFromDb, policy);
                 return dateFromDb;
             }
+
+            Console.WriteLine("Returned from cache:");
+            return MemoryCache.Default.Get(CacheKey) as string;
         }
     }
 }

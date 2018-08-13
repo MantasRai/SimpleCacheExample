@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data.SqlClient;
 using CacheSimpleExample.Interfaces;
 using Polly;
@@ -13,9 +12,9 @@ namespace CacheSimpleExample.Repository
         private readonly string _databaseConnection;
         private int _counter;
 
-        public DAL()
+        public DAL(string connectionstring)
         {
-            _databaseConnection = ConfigurationManager.ConnectionStrings["local"].ConnectionString;
+            _databaseConnection = connectionstring;
         }
 
         public string GetDateTimeFromSql()
